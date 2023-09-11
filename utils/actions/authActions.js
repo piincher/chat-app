@@ -1,18 +1,27 @@
 import { getFirebaseApp } from '../firebaseHelper';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { child, getDatabase, ref, set } from 'firebase/database';
+import { authenticate } from '../../store/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const signUp = async (firstName, lastName, email, password) => {
+export const signUp =  (firstName, lastName, email, password) => {
+
+    return async (dispatch) => {
+
+    
     const app = getFirebaseApp();
     const auth = getAuth(app);
 
     try {
         const result = await createUserWithEmailAndPassword(auth, email, password);
-        const { uid } = result.user;
-
+        const { uid,stsTokenManager } = result.user;
+        const { accessToken,expirationTime } = stsTokenManager;
+        const expirationDate = new Date(expirationTime);
         const userData = await createUser(firstName, lastName, email, uid);
 
-        console.log(userData);
+        dispatch(authenticate({token:accessToken, userId: userData.userId, email: userData.email, firstName: userData.firstName, lastName: userData.lastName, firstLast: userData.firstLast, signUpDate: userData.signUpDate}));
+        saveDataToStorage(accessToken, uid, expirationDate);
+
     } catch (error) {
         console.log(error);
         const errorCode = error.code;
@@ -25,7 +34,7 @@ export const signUp = async (firstName, lastName, email, password) => {
 
         throw new Error(message);
     }
-}
+}}
 
 const createUser = async (firstName, lastName, email, userId) => {
     const firstLast = `${firstName} ${lastName}`.toLowerCase();
@@ -42,4 +51,13 @@ const createUser = async (firstName, lastName, email, userId) => {
     const childRef = child(dbRef, `users/${userId}`);
     await set(childRef, userData);
     return userData;
+}
+
+
+const saveDataToStorage = (token, userId,expiryDate) => {
+    AsyncStorage.setItem("userData", JSON.stringify({
+        token,
+        userId,
+       expiryDate:expiryDate.toISOString(),
+    }));
 }

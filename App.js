@@ -8,8 +8,6 @@ import AppNavigator from './navigation/AppNavigator';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 
-LogBox.ignoreLogs(['AsyncStorage has been extracted']);
-
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
