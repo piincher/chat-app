@@ -45,21 +45,22 @@ const SignUpForm = props => {
         }
     }, [error])
 
-    const authHandler = async () => {
+    const authHandler = useCallback(async () => {
         try {
             setIsLoading(true);
-           dispatch(signUp(
+                 setError(null);
+          await dispatch(signUp(
                 formState.inputValues.firstName,
                 formState.inputValues.lastName,
                 formState.inputValues.email,
                 formState.inputValues.password,
             ))
-            setError(null);
+       
         } catch (error) {
             setError(error.message);
             setIsLoading(false);
         }
-    }
+    }, [dispatch.formState])
 
     return (
             <>
@@ -67,7 +68,7 @@ const SignUpForm = props => {
                     id="firstName"
                     label="First name"
                     icon="user-o"
-                    iconPack={FontAwesome}
+                     iconPack={FontAwesome}
                     onInputChanged={inputChangedHandler}
                     autoCapitalize="none"
                     errorText={formState.inputValidities["firstName"]} />
